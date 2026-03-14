@@ -1,5 +1,7 @@
 CFLAGS += -O3 -g
 
+.PHONY: all run clean poc poc_oryon poc_loongson
+
 ifeq ($(FR),1)
 CFLAGS += -DATTACK=FLUSHRELOAD
 else
@@ -36,4 +38,3 @@ poc_loongson: main_loongson.c
 
 clean:
 	rm -f poc poc_oryon poc_loongson
-

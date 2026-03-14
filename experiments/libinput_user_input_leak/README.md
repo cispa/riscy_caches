@@ -13,6 +13,9 @@ This experiment evaluates the shared-library user input leakage case study on An
 
 ## Usage
 
+> [!IMPORTANT]
+> This case study is Android-specific. The default path `/system/lib64/libinput.so` is expected on Android devices and will fail on regular Linux hosts.
+
 Build tools:
 
 ```sh
@@ -25,6 +28,8 @@ Scan for candidate cache lines (reads file paths from `libs`):
 printf '/system/lib64/libinput.so\n' > libs
 ./scan <cpu>
 ```
+
+If `scan` prints `[warn] could not map '/system/lib64/libinput.so'`, run it on the Android target device and confirm the library path in `/proc/self/maps`.
 
 Run the final leakage probe on the selected line (`0x1639d0`):
 

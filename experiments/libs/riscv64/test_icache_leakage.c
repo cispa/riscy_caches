@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
     if (argc > 1) {
         cpu = atoi(argv[1]);
     }
-    init_arch_sc(cpu);
+    init_arch_sc(&cpu);
 
     while (1) {
         uint32_t* exec_page = (uint32_t*)(exec_mapping + ((random() % exec_mapping_size) & (~7)));

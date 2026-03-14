@@ -2,6 +2,34 @@ CFLAGS += -O3 -g
 LATEX ?= pdflatex
 LATEXFLAGS ?= -interaction=nonstopmode -halt-on-error
 OUT_DIR ?= out
+ARCH ?= $(shell uname -m)
+
+# If ARCH is explicitly passed (env or command line), default to matching cross toolchain.
+# Keep plain host defaults when ARCH comes from the fallback above.
+ifneq ($(filter command line environment override,$(origin ARCH)),)
+ifeq ($(ARCH),aarch64)
+ifneq ($(origin CC),command line)
+CC := aarch64-unknown-linux-musl-gcc
+endif
+ifneq ($(origin LD),command line)
+LD := aarch64-unknown-linux-musl-ld
+endif
+else ifeq ($(ARCH),riscv64)
+ifneq ($(origin CC),command line)
+CC := riscv64-unknown-linux-musl-gcc
+endif
+ifneq ($(origin LD),command line)
+LD := riscv64-unknown-linux-musl-ld
+endif
+else ifeq ($(ARCH),loongarch64)
+ifneq ($(origin CC),command line)
+CC := loongarch64-unknown-linux-musl-gcc
+endif
+ifneq ($(origin LD),command line)
+LD := loongarch64-unknown-linux-musl-ld
+endif
+endif
+endif
 
 ifeq ($(FR),1)
 CFLAGS += -DATTACK=FLUSHRELOAD
@@ -31,7 +59,7 @@ openssl_arch_dir = openssl_$(ARCH)
 
 clean:
 	rm -rf aes_t_table
-	make -C $(openssl_arch_dir) clean
+	@if [ -d "$(openssl_arch_dir)" ]; then $(MAKE) -C "$(openssl_arch_dir)" clean; fi
 
 $(openssl_arch_dir):
 	if [ ! -d $(openssl_arch_dir) ]; then \
@@ -55,14 +83,14 @@ else
 endif
 
 $(openssl_arch_dir)/libcrypto.a: $(openssl_arch_dir) $(openssl_arch_dir)/crypto/aes/aes_core.c
-	make -C $(openssl_arch_dir) -j $(nproc)
+	$(MAKE) -C $(openssl_arch_dir) -j $(nproc) CFLAGS= CXXFLAGS= CPPFLAGS= LDFLAGS=
 
 always:
 
 # NOTE: we always want to build, as we cannot specify -B, as otherwise everything is rebuilt
 # its fast, so no issue
 aes_t_table: aes_t_table.c $(openssl_arch_dir)/libcrypto.a always
-	$(CC) -static $(CFLAGS) -o $@ aes_t_table.c -I$(openssl_arch_dir)/include -lcrypto -L$(openssl_arch_dir) -Wl,-rpath=openssl
+	$(CC) -static $(CFLAGS) -o $@ aes_t_table.c -I$(openssl_arch_dir)/include -lcrypto -L$(openssl_arch_dir) -Wl,-rpath=openssl -lm
 
 table:
 	python table.py > /dev/null

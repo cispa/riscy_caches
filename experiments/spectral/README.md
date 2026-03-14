@@ -32,17 +32,17 @@ make poc_loongson
 Run repeated trials (default `ARCHSC` mode):
 
 ```sh
-make -B && bash benchmark.sh <runs>
+make && bash benchmark.sh <runs>
 ```
 
 Run repeated trials with `Flush+Reload` baseline:
 
 ```sh
-FR=1 make -B && bash benchmark.sh <runs>
+FR=1 make && bash benchmark.sh <runs>
 ```
 
 For T-Head C910 configuration:
 
 ```sh
-THEAD=1 make -B && bash benchmark.sh <runs>
+THEAD=1 make && bash benchmark.sh <runs>
 ```

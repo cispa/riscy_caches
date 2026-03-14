@@ -1,5 +1,5 @@
-#include <math.h>
 #define _GNU_SOURCE
+#include <math.h>
 #include <fcntl.h>
 #include <openssl/aes.h>
 #include <sched.h>

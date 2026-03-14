@@ -137,9 +137,9 @@ void scan(const char* name, const char* path, char *start, char *end, unsigned l
         unsigned long long absaddr = (unsigned long long)start;
         unsigned long long reladdr = absaddr - elf_base;
         if (hits > 0.8*n) {
-            printf("%s %lx (abs %lx): %d\n", name, reladdr, absaddr, hits);
+            printf("%s %llx (abs %llx): %d\n", name, reladdr, absaddr, hits);
         }
-        fprintf(fp_csv, "%d,%s,%lx,%lx,%s\n", hits, name, reladdr, absaddr, path);
+        fprintf(fp_csv, "%d,%s,%llx,%llx,%s\n", hits, name, reladdr, absaddr, path);
         sleep(1000);
     }
 }

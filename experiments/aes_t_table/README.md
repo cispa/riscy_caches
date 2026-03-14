@@ -17,9 +17,14 @@ This experiment evaluates the AES T-table case study (Section 6.2, Table 8; Appe
 Build `ICSC` and `Flush+Reload` binaries:
 
 ```sh
-make && cp aes_t_table aes_t_table_archsc
-FR=1 make && cp aes_t_table aes_t_table_fr
+ARCH=<aarch64|riscv64|loongarch64> make && cp aes_t_table aes_t_table_archsc
+ARCH=<aarch64|riscv64|loongarch64> FR=1 make && cp aes_t_table aes_t_table_fr
 ```
+
+When compiling directly on the target machine, plain `make` / `FR=1 make` is sufficient. The explicit `ARCH=...` form is mainly needed for cross-compiling.
+
+> [!NOTE]
+> The first build clones and compiles OpenSSL (`openssl_<arch>`), which can take a while.
 
 Run repeated evaluation on a core:
 

@@ -44,6 +44,7 @@
           nativeBuildInputs = [
             pkgs.clang-tools
             pkgs.git
+            pkgs.perl
             pkgs.texlive.combined.scheme-full
           ];
         });
