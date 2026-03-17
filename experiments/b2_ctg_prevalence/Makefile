@@ -28,10 +28,10 @@ plot:
 	python plot.py
 
 table:
-	python table.py --pct-baseline
+	python table.py
 
 table_tex:
-	python table.py --pct-baseline --latex > b2_ctg_prevalence_table.tex
+	python table.py --latex > b2_ctg_prevalence_table.tex
 
 b2_ctg_prevalence_table.pdf: table_tex table_standalone.tex
 	@mkdir -p $(OUT_DIR)

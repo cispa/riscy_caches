@@ -28,24 +28,11 @@ def green_to_red(t: float) -> Tuple[int, int, int]:
     return r, g, 0
 
 
-def purple_to_red(t: float) -> Tuple[int, int, int]:
-    """
-    Eye-friendly scale for white backgrounds:
-    deep purple (102, 0, 153) → deep blue (0, 0, 200) → strong red (200, 0, 0).
-    """
+def red_to_blue(t: float) -> Tuple[int, int, int]:
     t = max(0.0, min(1.0, t))
-    if t < 0.5:
-        # 0.0 → 0.5 : purple to blue
-        frac = t / 0.5
-        r = int(102 + (0   - 102) * frac)
-        g = int(0   + (0   - 0)   * frac)
-        b = int(153 + (200 - 153) * frac)
-    else:
-        # 0.5 → 1.0 : blue to red
-        frac = (t - 0.5) / 0.5
-        r = int(0   + (200 - 0)   * frac)
-        g = 0
-        b = int(200 + (0   - 200) * frac)
+    r = int(lerp(200, 0, t))
+    g = 0
+    b = int(lerp(0, 200, t))
     return r, g, b
 
 
@@ -55,7 +42,7 @@ def nonlinearize(t: float, gamma: float) -> float:
     return t ** gamma
 
 
-def _detect_header_aliases(fieldnames: Iterable[str]) -> Dict[str, Optional[str]]:
+def _detect_header_aliases(fieldnames: Iterable[str]) -> Dict[str, str]:
     fields = {f.strip(): f.strip() for f in (fieldnames or [])}
 
     def first_present(*candidates: str) -> Optional[str]:
@@ -222,7 +209,7 @@ def latex_makecell_label(label: str) -> str:
 def latex_format_value(v: float, pct_mode: bool) -> str:
     if pct_mode:
         # return r"\SI{" + f"{v:+.1f}" + r"}{\percent}"
-        return "\\dotscale{0.5}{" + f"{-v/100}" + "}"
+        return r"\dotscale{0.5}{" + f"{-v/100}" + "}"
     else:
         return f"{v:.3f}"
 
@@ -260,37 +247,58 @@ def emit_latex_table(headers: List[str],
     if label:
         print(f"% label: {label}")
 
+
+def clamp01(v: float) -> float:
+    return max(0.0, min(1.0, v))
+
+
+def normalize_between(value: float, slow: float, fast: float) -> float:
+    if slow == fast:
+        return 0.5
+    return clamp01((slow - value) / (slow - fast))
+
 def main():
     ap = argparse.ArgumentParser(add_help=False, description=None)
     ap.add_argument("dir", nargs="?", default="b2_ctg_prevalence_results",
                     help="directory containing per-µarch CSV files")
-    ap.add_argument("--pct-baseline", action="store_true",
-                    help="show values as percent change vs the baseline (0,0,0,0,0) for each row; hides the baseline column")
+    ap.add_argument("--mode", choices=["range", "percent", "raw"], default="range",
+                    help="output mode: compact clamped range view, percent vs baseline, or raw timings")
     ap.add_argument("--gamma", type=float, default=0.8,
                     help="gamma for color mapping (lower <1 => more sensitivity at low end)")
     ap.add_argument("--no-color", action="store_true", help="disable ANSI colors (terminal mode only)")
     ap.add_argument("--latex", action="store_true",
-                    help="emit a LaTeX tabular instead of ANSI table (uses colored *text* and SI for percents)")
-    ap.add_argument("--full-columns", action="store_true",
-                    help="show all diagnostic columns (old format) instead of the compact paper layout")
+                    help="emit a LaTeX tabular for range mode")
     ap.add_argument("--latex-caption", default=None, help="(LaTeX) optional caption comment")
     ap.add_argument("--latex-label", default=None, help="(LaTeX) optional label comment")
     ap.add_argument("-h", "--help", action="help", help="show this help message and exit")
     args = ap.parse_args()
 
+    range_mode = args.mode == "range"
+    pct_baseline = args.mode == "percent"
+
+    if args.latex and not range_mode:
+        print("error: LaTeX output is only supported in --mode range", file=sys.stderr)
+        sys.exit(2)
+
     testcases, data = parse_dir(args.dir)
 
     BASEKEY: Key5 = (0, 0, 0, 0, 0)
 
-    CASE_TD_LOAD: Key5 = (1, 0, 1, 1, 0)    # transient dependent load, victim uncached
-    CASE_TD_CLOAD: Key5 = (1, 0, 1, 1, 1)   # transient dependent load, victim cached
-    CASE_TD_JUMP: Key5 = (1, 1, 0, 1, 0)    # transient dependent jump, victim uncached
-    CASE_TD_CJUMP: Key5 = (1, 1, 0, 1, 1)   # transient dependent jump, victim cached
+    CASE_LOAD: Key5 = (0, 0, 1, 0, 0)       # load
+    CASE_JUMP: Key5 = (0, 1, 0, 0, 0)       # jump
+    CASE_T_LOAD: Key5 = (1, 0, 1, 0, 0)     # tran load
+    CASE_T_JUMP: Key5 = (1, 1, 0, 0, 0)     # tran jump
+    CASE_TD_LOAD: Key5 = (1, 0, 1, 1, 0)    # tran dep load
+    CASE_TD_CLOAD: Key5 = (1, 0, 1, 1, 1)   # tran dep cached load
+    CASE_TD_JUMP: Key5 = (1, 1, 0, 1, 0)    # tran dep jump
+    CASE_TD_CJUMP: Key5 = (1, 1, 0, 1, 1)   # tran dep cached jump
 
-    if args.full_columns:
-        display_cases: List[Key5] = [c for c in testcases if not (args.pct_baseline and c == BASEKEY)]
+    if range_mode:
+        compact_cases: List[Key5] = [CASE_TD_LOAD, CASE_TD_CLOAD, CASE_TD_JUMP, CASE_TD_CJUMP]
     else:
-        display_cases = [CASE_TD_LOAD, CASE_TD_CLOAD, CASE_TD_JUMP, CASE_TD_CJUMP]
+        compact_cases = []
+
+    display_cases: List[Key5] = compact_cases if range_mode else list(testcases)
 
     # In-order cores (no \cmark). Everything else → treated as out-of-order.
     IN_ORDER_SET = {
@@ -303,15 +311,9 @@ def main():
         "Cortex-A55",
     }
 
-    # Headers for terminal output. LaTeX compact mode uses a custom multi-row header.
     headers: List[str] = ["µarch"]
-    if args.full_columns:
-        for c in display_cases:
-            headers.append(case_label(c))
-            if c == (1, 1, 0, 0, 0):
-                headers.append("tran jump works")
-    else:
-        headers += ["load uncached", "load cached", "fetch uncached", "fetch cached"]
+    for c in display_cases:
+        headers.append(case_label(c))
     headers.append(r"\bbtwo")
 
     plain_rows: List[List[str]] = []
@@ -332,7 +334,7 @@ def main():
             raw_v = rows.get(c)
             if raw_v is None:
                 disp_vals_by_case[c] = None
-            elif args.pct_baseline:
+            elif pct_baseline:
                 if base_val is None or base_val == 0:
                     disp_vals_by_case[c] = None
                 else:
@@ -340,7 +342,20 @@ def main():
             else:
                 disp_vals_by_case[c] = raw_v
 
-        present = [v for v in disp_vals_by_case.values() if v is not None]
+        if range_mode:
+            present = []
+            for c in display_cases:
+                if c in (CASE_TD_LOAD, CASE_TD_CLOAD):
+                    slow = rows.get(BASEKEY)
+                    fast = rows.get(CASE_LOAD)
+                else:
+                    slow = rows.get(BASEKEY)
+                    fast = rows.get(CASE_JUMP)
+                raw_v = rows.get(c)
+                if slow is not None and fast is not None and raw_v is not None:
+                    present.append(normalize_between(raw_v, slow, fast))
+        else:
+            present = [v for v in disp_vals_by_case.values() if v is not None]
         vmin, vmax = (min(present), max(present)) if present else (0.0, 0.0)
 
         # Start row with µarch and out-of-order flag
@@ -363,62 +378,53 @@ def main():
         #     latex_cells.append("")
         #     latex_colors.append(None)
 
-        # Emit per-case cells (full mode inserts "tran jump works" after tran jump)
+        # Emit per-case cells.
         for c in display_cases:
-            v = disp_vals_by_case[c]
+            if range_mode:
+                if c in (CASE_TD_LOAD, CASE_TD_CLOAD):
+                    slow = rows.get(BASEKEY)
+                    fast = rows.get(CASE_LOAD)
+                else:
+                    slow = rows.get(BASEKEY)
+                    fast = rows.get(CASE_JUMP)
+                raw_v = rows.get(c)
+                if slow is None or fast is None or raw_v is None:
+                    v = None
+                else:
+                    v = normalize_between(raw_v, slow, fast)
+            else:
+                v = disp_vals_by_case[c]
             if v is None:
                 plain_cells.append("-")
                 color_cells.append((120, 120, 120) if not args.no_color else None)
                 latex_cells.append("-")
                 latex_colors.append((180, 180, 180))
             else:
-                s_term = format_pct(v) if args.pct_baseline else format_value(v)
+                s_term = format_value(v) if range_mode else (format_pct(v) if pct_baseline else format_value(v))
                 plain_cells.append(s_term)
                 if args.no_color or args.latex:
                     color_cells.append(None)
                 else:
+                    if range_mode:
+                        color_cells.append(green_to_red(1.0 - v))
+                    else:
+                        t = 0.5 if vmax == vmin else (v - vmin) / (vmax - vmin)
+                        t = nonlinearize(t, args.gamma)
+                        color_cells.append(green_to_red(t))
+
+                s_tex = latex_format_value(-100.0 * v, True) if range_mode else latex_format_value(v, pct_baseline)
+                latex_cells.append(s_tex)
+                if range_mode:
+                    latex_colors.append(red_to_blue(v))
+                else:
                     t = 0.5 if vmax == vmin else (v - vmin) / (vmax - vmin)
                     t = nonlinearize(t, args.gamma)
-                    color_cells.append(green_to_red(t))
+                    latex_colors.append(red_to_blue(t))
 
-                s_tex = latex_format_value(v, args.pct_baseline)
-                latex_cells.append(s_tex)
-                t = 0.5 if vmax == vmin else (v - vmin) / (vmax - vmin)
-                t = nonlinearize(t, args.gamma)
-                latex_colors.append(purple_to_red(t))
-
-            if args.full_columns and c == (1, 1, 0, 0, 0):
-                works_tjump: Optional[bool]
-                disp_jump = disp_vals_by_case.get((0, 1, 0, 0, 0))
-                disp_tjump = disp_vals_by_case.get((1, 1, 0, 0, 0))
-                if disp_jump is None or disp_tjump is None:
-                    works_tjump = None
-                else:
-                    if args.pct_baseline:
-                        works_tjump = abs(disp_tjump - disp_jump) <= 15.0
-                    else:
-                        works_tjump = abs(rows[(1, 1, 0, 0, 0)] - rows[(0, 1, 0, 0, 0)]) <= 10.0
-
-                if works_tjump is None:
-                    plain_cells.append("-")
-                    color_cells.append((120, 120, 120) if not args.no_color else None)
-                    latex_cells.append("-")
-                    latex_colors.append((180, 180, 180))
-                elif works_tjump:
-                    plain_cells.append("✓")
-                    color_cells.append(None)
-                    latex_cells.append(r"\cmark")
-                    latex_colors.append(None)
-                else:
-                    plain_cells.append("")
-                    color_cells.append(None)
-                    latex_cells.append("")
-                    latex_colors.append(None)
-
-        # --- \bbtwo check (raw or % depending on --pct-baseline) ---
+        # --- \bbtwo check (raw or % depending on output mode) ---
         raw_tdj = rows.get(CASE_TD_JUMP)
         raw_tdcj = rows.get(CASE_TD_CJUMP)
-        if args.pct_baseline:
+        if pct_baseline:
             disp_tdj = disp_vals_by_case.get(CASE_TD_JUMP)
             disp_tdcj = disp_vals_by_case.get(CASE_TD_CJUMP)
             if disp_tdj is None or disp_tdcj is None:
@@ -454,48 +460,37 @@ def main():
         latex_rows_colors.append(latex_colors)
 
     if args.latex:
-        if not args.full_columns:
-            print("% LaTeX table generated by b2_ctg_prevalence/table.py")
-            print(r"\begin{tabular}{lccccc}")
-            print(r"\toprule")
-            print(r" & \multicolumn{2}{c}{\small\textbf{Data Load}}")
-            print(r" & \multicolumn{2}{c}{\small\textbf{Instr. Fetch}}")
-            print(r" & \multirow{2}{*}{\small\textbf{\bbtwo}} \\")
-            print(r"\cmidrule(lr){2-3}\cmidrule(lr){4-5}")
-            print(r"\textbf{Microarch.} & \small\textbf{uncached} & \small\textbf{cached}")
-            print(r" & \small\textbf{uncached} & \small\textbf{cached}")
-            print(r" & \\")
-            print(r"\midrule")
-            for text_row, color_row in zip(latex_rows_text, latex_rows_colors):
-                cells = []
-                for s, c in zip(text_row, color_row):
-                    s = "-" if s is None else s
-                    rgb01 = latex_rgb01_from_rgb255(c) if c else None
-                    cells.append(latex_color_text(s, rgb01))
-                print(" & ".join(cells) + r" \\")
-            print(r"\bottomrule")
-            print(r"\end{tabular}")
-        else:
-            latex_headers: List[str] = [latex_makecell_label("µarch")]
-            for c in display_cases:
-                latex_headers.append(latex_makecell_label(case_label(c)))
-                if c == (1, 1, 0, 0, 0):
-                    latex_headers.append(latex_makecell_label("tran jump works"))
-            latex_headers.append(r"\bbtwo")
+        print("% LaTeX table generated by transient_fetch_test/table.py")
+        print(r"\begin{tabular}{lccccc}")
+        print(r"\toprule")
+        print(r" & \multicolumn{2}{c}{\small\textbf{Data Load}}")
+        print(r" & \multicolumn{2}{c}{\small\textbf{Instr. Fetch}}")
+        print(r" & \multirow{2}{*}{\small\textbf{\bbtwo}} \\")
+        print(r"\cmidrule(lr){2-3}\cmidrule(lr){4-5}")
+        print(r"\textbf{Microarch.} & \small\textbf{uncached} & \small\textbf{cached}")
+        print(r" & \small\textbf{uncached} & \small\textbf{cached}")
+        print(r" & \\")
+        print(r"\midrule")
+        for text_row, color_row in zip(latex_rows_text, latex_rows_colors):
+            cells = []
+            for s, c in zip(text_row, color_row):
+                s = "-" if s is None else s
+                rgb01 = latex_rgb01_from_rgb255(c) if c else None
+                cells.append(latex_color_text(s, rgb01))
+            print(" & ".join(cells) + r" \\")
+        print(r"\bottomrule")
+        print(r"\end{tabular}")
 
-            emit_latex_table(latex_headers, latex_rows_text, latex_rows_colors,
-                             caption=args.latex_caption, label=args.latex_label)
-
-        lo_r, lo_g, lo_b = latex_rgb01_from_rgb255(purple_to_red(nonlinearize(0.0, args.gamma)))
-        mid_r, mid_g, mid_b = latex_rgb01_from_rgb255(purple_to_red(nonlinearize(0.5, args.gamma)))
-        hi_r, hi_g, hi_b = latex_rgb01_from_rgb255(purple_to_red(nonlinearize(1.0, args.gamma)))
-        mode = "%Δ vs baseline (baseline column hidden)" if args.pct_baseline else "raw"
+        mode = "range"
+        lo_r, lo_g, lo_b = latex_rgb01_from_rgb255(red_to_blue(0.0))
+        mid_r, mid_g, mid_b = latex_rgb01_from_rgb255(red_to_blue(0.5))
+        hi_r, hi_g, hi_b = latex_rgb01_from_rgb255(red_to_blue(1.0))
         print(f"% Per-row text color scale (gamma={args.gamma:.2f}, mode={mode}): "
               f"low=({lo_r:.2f},{lo_g:.2f},{lo_b:.2f}) -> mid=({mid_r:.2f},{mid_g:.2f},{mid_b:.2f}) -> "
               f"high=({hi_r:.2f},{hi_g:.2f},{hi_b:.2f}).")
-        print("% NOTE: Percent cells use \\SI{...}{\\percent} (siunitx).")
-        if args.full_columns:
-            print("% NOTE: 'tran jump works' is |tran jump - jump| <= 10 (raw) or <= 15 (%% mode).")
+        print("% NOTE: Range slider cells are normalized between slow and fast control cases and clamped to [0,1].")
+        print("% NOTE: Data Load uses baseline=(0,0,0,0,0) as slow and load=(0,0,1,0,0) as fast.")
+        print("% NOTE: Instr. Fetch uses baseline=(0,0,0,0,0) as slow and jump=(0,1,0,0,0) as fast.")
         print("% NOTE: \\bbtwo is '(tran dep jump - 10) > tran dep cached jump' "
               "(applied on raw or %% values matching the table mode).")
         print("% NOTE: \\cmark should be defined in LaTeX or replace with \\checkmark (amssymb).")
@@ -509,10 +504,15 @@ def main():
         print("  ".join(pad_and_color(cell, widths[i], col) for i, (cell, col) in enumerate(zip(r_plain, r_colors))))
 
     if not args.no_color:
-        lo = rgb_ansi(*green_to_red(nonlinearize(0.0, args.gamma)), "low")
-        mid = rgb_ansi(*green_to_red(nonlinearize(0.5, args.gamma)), "mid")
-        hi = rgb_ansi(*green_to_red(nonlinearize(1.0, args.gamma)), "high")
-        mode = "%Δ vs baseline (baseline column hidden)" if args.pct_baseline else "raw"
+        mode = args.mode
+        if range_mode:
+            lo = rgb_ansi(*green_to_red(1.0), "slow")
+            mid = rgb_ansi(*green_to_red(0.5), "mid")
+            hi = rgb_ansi(*green_to_red(0.0), "fast")
+        else:
+            lo = rgb_ansi(*green_to_red(nonlinearize(0.0, args.gamma)), "low")
+            mid = rgb_ansi(*green_to_red(nonlinearize(0.5, args.gamma)), "mid")
+            hi = rgb_ansi(*green_to_red(nonlinearize(1.0, args.gamma)), "high")
         print(f"\nPer-row color scale (gamma={args.gamma:.2f}, mode={mode}): {lo} \u2192 {mid} \u2192 {hi} (min \u2192 mid \u2192 max).")
     else:
         print("\nPer-row scale: min → max (colors disabled).")

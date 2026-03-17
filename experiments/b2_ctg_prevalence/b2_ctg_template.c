@@ -51,6 +51,14 @@ PASTE(test_,NAME)(void* victim, int d_cached, int itlb_cached) {
     // Full barrier here. This brings down false hits a lot.
     mfence();
     nospec();
+    // NOTE: needed for Oryon
+    for (int i = 0; i < 20; i++) {
+        mfence();
+    }
+    // NOTE: needed for Kunpeng
+    for (int i = 0; i < 1000; i++) {
+        asm volatile("nop");
+    }
 
     asm volatile(
         ".global return_to_"STR(NAME)"\n"
