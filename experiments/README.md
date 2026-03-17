@@ -6,9 +6,9 @@ This directory contains all paper experiments and case studies.
 
 - [libs](./libs/): Shared ICSC core libraries (cross-ISA `cacheutils`, I-cache probing helpers, and per-architecture implementations for AArch64/Oryon, RISC-V, and LoongArch).
 - [inconsistency](./inconsistency/): Instruction/data-cache inconsistency check (Section 4.2).
-- [b1_icache_oracle_prevalence](./b1_icache_oracle_prevalence/): B1 I-cache oracle prevalence experiment (Section 4.2, Figure 5/6).
+- [b1_icache_oracle_prevalence](./b1_icache_oracle_prevalence/): B1 I-cache oracle prevalence experiment (Section 4.2, Figure 6).
 - [b1_icache_oracle_performance](./b1_icache_oracle_performance/): B1 I-cache oracle performance experiment (Section 5.1, Table 4).
-- [b2_ctg_prevalence](./b2_ctg_prevalence/): B2 CTG prevalence experiment (Section 4.3, Figure 4, Table 3).
+- [b2_ctg_prevalence](./b2_ctg_prevalence/): B2 CTG prevalence experiment (Section 4.3, Table 3).
 
 ## Covert-Channel Performance (Section 5)
 

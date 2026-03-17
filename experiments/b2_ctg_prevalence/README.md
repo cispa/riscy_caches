@@ -1,6 +1,6 @@
 # B2 CTG Prevalence
 
-This experiment evaluates the prevalence study of the Cache-State Transfer Gadget (CTG) (B2) (Section 4.3, Figure 4, Table 3).
+This experiment evaluates the prevalence study of the Cache-State Transfer Gadget (CTG) (B2) (Section 4.3, Table 3).
 
 ## Files
 

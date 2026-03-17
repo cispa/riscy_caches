@@ -1,6 +1,6 @@
 # B1 I-Cache Oracle Prevalence
 
-This experiment evaluates prevalence and parameter sensitivity of the B1 I-cache oracle (Section 4.2, Figure 5/6).
+This experiment evaluates prevalence and parameter sensitivity of the B1 I-cache oracle (Section 4.2, Figure 6).
 
 ## Files
 
