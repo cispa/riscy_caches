@@ -82,8 +82,8 @@ def main():
     latex.append(r"& \multicolumn{5}{c}{\textbf{Time} (\si{\milli\second}, $\downarrow$)} \\")
     latex.append(r"\cmidrule(lr){2-4}\cmidrule(lr){5-9}")
     latex.append(r"\textbf{Microarch.}")
-    latex.append(r"& \textbf{F+R} & \textbf{ICSC} & {$\Delta$}")
-    latex.append(r"& \textbf{F+R} & ($\pm$, $n$=\num{100}) & \textbf{ICSC} & ($\pm$, $n$=\num{100}) & {$\Delta$\%} \\")
+    latex.append(r"& \textbf{F+R} & \textbf{I2SC} & {$\Delta$}")
+    latex.append(r"& \textbf{F+R} & ($\pm$, $n$=\num{100}) & \textbf{I2SC} & ($\pm$, $n$=\num{100}) & {$\Delta$\%} \\")
     latex.append(r"\midrule")
 
     for name, fr_s, our_s, fr_t, fr_e, our_t, our_e in rows:

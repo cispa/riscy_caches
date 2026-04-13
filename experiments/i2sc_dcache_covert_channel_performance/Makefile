@@ -19,13 +19,13 @@ ifeq ($(MFENCE_64),1)
 CFLAGS += -DMFENCE_64
 endif
 
-all: icsc_dcache_covert_channel_performance
+all: i2sc_dcache_covert_channel_performance
 
-run: icsc_dcache_covert_channel_performance
-	./icsc_dcache_covert_channel_performance
+run: i2sc_dcache_covert_channel_performance
+	./i2sc_dcache_covert_channel_performance
 
-icsc_dcache_covert_channel_performance: icsc_dcache_covert_channel_performance.c
-	$(CC) $(CFLAGS) -o icsc_dcache_covert_channel_performance icsc_dcache_covert_channel_performance.c -lm
+i2sc_dcache_covert_channel_performance: i2sc_dcache_covert_channel_performance.c
+	$(CC) $(CFLAGS) -o i2sc_dcache_covert_channel_performance i2sc_dcache_covert_channel_performance.c -lm
 
 table:
 	python table.py
@@ -39,18 +39,18 @@ table_tex:
 table_vs_fr_tex:
 	python table.py --compare-fr > /dev/null
 
-icsc_dcache_covert_channel_performance_table.pdf: table_tex table_standalone.tex
+i2sc_dcache_covert_channel_performance_table.pdf: table_tex table_standalone.tex
 	@mkdir -p $(OUT_DIR)
 	$(LATEX) $(LATEXFLAGS) -output-directory $(OUT_DIR) -jobname $(basename $@) table_standalone.tex > $(OUT_DIR)/$(basename $@).build.log 2>&1 || (echo "LaTeX build failed; see $(OUT_DIR)/$(basename $@).build.log"; false)
 	@cp "$(OUT_DIR)/$@" "$@"
 	@echo "Built $@"
 
-icsc_dcache_covert_channel_performance_vs_flush_reload_table.pdf: table_vs_fr_tex table_standalone.tex
+i2sc_dcache_covert_channel_performance_vs_flush_reload_table.pdf: table_vs_fr_tex table_standalone.tex
 	@mkdir -p $(OUT_DIR)
 	$(LATEX) $(LATEXFLAGS) -output-directory $(OUT_DIR) -jobname $(basename $@) table_standalone.tex > $(OUT_DIR)/$(basename $@).build.log 2>&1 || (echo "LaTeX build failed; see $(OUT_DIR)/$(basename $@).build.log"; false)
 	@cp "$(OUT_DIR)/$@" "$@"
 	@echo "Built $@"
 
 clean:
-	rm -f icsc_dcache_covert_channel_performance icsc_dcache_covert_channel_performance_table.pdf icsc_dcache_covert_channel_performance_vs_flush_reload_table.pdf table.tex
+	rm -f i2sc_dcache_covert_channel_performance i2sc_dcache_covert_channel_performance_table.pdf i2sc_dcache_covert_channel_performance_vs_flush_reload_table.pdf table.tex
 	rm -rf $(OUT_DIR)

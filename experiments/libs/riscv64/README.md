@@ -1,4 +1,4 @@
-# RISC-V ICSC Library
+# RISC-V I2SC Library
 
 This directory provides the RISC-V implementation of the architectural cache-state leakage primitive.
 

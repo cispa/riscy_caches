@@ -9,7 +9,7 @@ It is archived on [Zenodo](https://doi.org/10.5281/zenodo.19127138).
 ## Abstract
 
 This artifact accompanies "RISCy Cache Coherence: Timer-Free Architectural Cache Attacks via Instruction/Data Cache Incoherence" and provides the code and data for reproducing the paper's experiments.
-It covers the instruction/data-cache inconsistency analysis, prevalence and performance evaluations of building blocks B1/B2 and ICSC covert channels, and the case studies (Spectral, AES T-tables, and shared-library user-input leakage).
+It covers the instruction/data-cache inconsistency analysis, prevalence and performance evaluations of building blocks B1/B2 and I2SC covert channels, and the case studies (Spectral, AES T-tables, and shared-library user-input leakage).
 The repository also includes helper tooling for cross-machine experiment orchestration, standalone table/figure generation, and software mitigation evaluation.
 
 ## Structure

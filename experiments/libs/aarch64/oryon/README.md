@@ -1,4 +1,4 @@
-# AArch64 Oryon ICSC Library
+# AArch64 Oryon I2SC Library
 
 This directory provides the Oryon-tuned ARMv8 implementation of the architectural cache-state leakage primitive.
 

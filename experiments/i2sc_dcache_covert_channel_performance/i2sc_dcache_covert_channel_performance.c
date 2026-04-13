@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
 
     char filename[128];
     FILE *fp_csv2;
-    snprintf(filename, sizeof(filename), "icsc_dcache_covert_channel_performance_results_%d.csv", cpu);
+    snprintf(filename, sizeof(filename), "i2sc_dcache_covert_channel_performance_results_%d.csv", cpu);
     printf("Writing to %s\n", filename);
     fp_csv2 = fopen(filename, "w");
     assert(fp_csv2);

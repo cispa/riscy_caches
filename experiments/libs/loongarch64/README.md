@@ -1,4 +1,4 @@
-# LoongArch ICSC Library
+# LoongArch I2SC Library
 
 This directory provides the LoongArch implementation of the architectural cache-state leakage primitive.
 

@@ -8,10 +8,10 @@ This document defines the artifact-evaluation scope for IEEE S&P 2026.
 
 ## Claim 1
 
-The ICSC side channel leaks D-cache state without timers.
+The I2SC side channel leaks D-cache state without timers.
 
 - Machine: lab88 (Qualcomm Oryon)
-- Experiment: [AArch64 Oryon ICSC Library](./experiments/libs/aarch64/oryon/README.md)
+- Experiment: [AArch64 Oryon I2SC Library](./experiments/libs/aarch64/oryon/README.md)
 - Expected outcome: repeated measurements show `should be low` close to `0%` and `should be high` close to `100%`.
 
 ### Claim 1 Instructions
@@ -39,7 +39,7 @@ should be high:  99.80
 
 ## Claim 2
 
-ICSC can be used to mount attacks, including practical timer-free Spectral attacks.
+I2SC can be used to mount attacks, including practical timer-free Spectral attacks.
 
 - Machine: lab88 (Qualcomm Oryon)
 - Experiment: [Spectral case study](./experiments/spectral/README.md).

@@ -1,4 +1,4 @@
-# AArch64 ICSC Library
+# AArch64 I2SC Library
 
 This directory provides the ARMv8 implementation of the architectural cache-state leakage primitive.
 

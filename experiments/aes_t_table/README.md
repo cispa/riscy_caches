@@ -4,7 +4,7 @@ This experiment evaluates the AES T-table case study (Section 6.2, Table 8; Appe
 
 ## Files
 
-- [`aes_t_table.c`](./aes_t_table.c) - main attack implementation (ICSC and `Flush+Reload` variants)
+- [`aes_t_table.c`](./aes_t_table.c) - main attack implementation (I2SC and `Flush+Reload` variants)
 - [`aes_t_table_results/`](./aes_t_table_results/) - collected result files
 - [`table.py`](./table.py) - generates the AES result table
 - [`table_standalone.tex`](./table_standalone.tex) - standalone wrapper for rendering the table as a PDF
@@ -14,7 +14,7 @@ This experiment evaluates the AES T-table case study (Section 6.2, Table 8; Appe
 
 ## Usage
 
-Build `ICSC` and `Flush+Reload` binaries:
+Build `I2SC` and `Flush+Reload` binaries:
 
 ```sh
 ARCH=<aarch64|riscv64|loongarch64> make && cp aes_t_table aes_t_table_archsc

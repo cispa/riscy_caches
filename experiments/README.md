@@ -4,7 +4,7 @@ This directory contains all paper experiments and case studies.
 
 ## Building Blocks and Prevalence (Section 4)
 
-- [libs](./libs/): Shared ICSC core libraries (cross-ISA `cacheutils`, I-cache probing helpers, and per-architecture implementations for AArch64/Oryon, RISC-V, and LoongArch).
+- [libs](./libs/): Shared I2SC core libraries (cross-ISA `cacheutils`, I-cache probing helpers, and per-architecture implementations for AArch64/Oryon, RISC-V, and LoongArch).
 - [inconsistency](./inconsistency/): Instruction/data-cache inconsistency check (Section 4.2).
 - [b1_icache_oracle_prevalence](./b1_icache_oracle_prevalence/): B1 I-cache oracle prevalence experiment (Section 4.2, Figure 6).
 - [b1_icache_oracle_performance](./b1_icache_oracle_performance/): B1 I-cache oracle performance experiment (Section 5.1, Table 4).
@@ -13,7 +13,7 @@ This directory contains all paper experiments and case studies.
 ## Covert-Channel Performance (Section 5)
 
 - [b2_ctg_performance](./b2_ctg_performance/): B2 CTG performance experiment (Section 5.2, Table 5).
-- [icsc_dcache_covert_channel_performance](./icsc_dcache_covert_channel_performance/): ICSC D-cache covert-channel performance (Section 5.3, Table 6) and Flush+Reload comparison (Section 5.4, Table 7).
+- [i2sc_dcache_covert_channel_performance](./i2sc_dcache_covert_channel_performance/): I2SC D-cache covert-channel performance (Section 5.3, Table 6) and Flush+Reload comparison (Section 5.4, Table 7).
 
 ## Case Studies (Section 6)
 
